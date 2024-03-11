@@ -90,7 +90,72 @@ const updateBlog = asyncHandler(async (req, res) => {
 });
 
 const getAllBlog = asyncHandler(async (req, res) => {
-  const blog = await Blog.find().select("image blogTitle status updatedAt createdAt");
+  const blog = await Blog.find().select(
+    "image blogTitle status updatedAt createdAt"
+  );
+
+  if (blog.length == 0) {
+    res.status(404);
+    throw new Error("Blog Not Found!");
+  }
+
+  res.status(200).json(blog);
+});
+
+const getBlogByMonth = asyncHandler(async (req, res) => {
+  const currentDate = new Date();
+
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  );
+
+  const lastDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0
+  );
+
+  const blog = await Blog.find({
+    createdAt: {
+      $gte: firstDayOfMonth,
+      $lte: lastDayOfMonth,
+    },
+  }).select("image blogTitle status updatedAt createdAt");
+
+  if (blog.length == 0) {
+    res.status(404);
+    throw new Error("Blog Not Found!");
+  }
+
+  res.status(200).json(blog);
+});
+
+const getTodayBlog = asyncHandler(async (req, res) => {
+  const currentDate = new Date();
+
+  const startOfDay = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate()
+  );
+
+  const endOfDay = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate(),
+    23,
+    59,
+    59
+  );
+
+  const blog = await Blog.find({
+    createdAt: {
+      $gte: startOfDay,
+      $lte: endOfDay,
+    },
+  }).select("image blogTitle status updatedAt createdAt");
 
   if (blog.length == 0) {
     res.status(404);
@@ -154,4 +219,6 @@ module.exports = {
   getSingleBlog,
   deleteBlog,
   updateBlogStatus,
+  getBlogByMonth,
+  getTodayBlog
 };
