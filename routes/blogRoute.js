@@ -7,6 +7,8 @@ const {
   getSingleBlog,
   deleteBlog,
   updateBlogStatus,
+  getBlogContentImg,
+  addBlogImage,
 } = require("../controllers/blogController");
 
 const router = express.Router();
@@ -17,5 +19,7 @@ router.get("/all", getAllBlog);
 router.get("/:id", getSingleBlog);
 router.delete("/:id", deleteBlog);
 router.patch("/status/:id", updateBlogStatus);
+router.post("/image", uploadToCloudinary("contentImg"), addBlogImage);
+router.get("/image/single", getBlogContentImg);
 
 module.exports = router;

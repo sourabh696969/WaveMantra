@@ -1,5 +1,5 @@
 const asyncHandler = require("express-async-handler");
-const Blog = require("../models/blogModel");
+const { Blog, Img } = require("../models/blogModel");
 
 const createBlog = asyncHandler(async (req, res) => {
   const {
@@ -123,7 +123,7 @@ const getAllBlog = asyncHandler(async (req, res) => {
     blogs,
     blogsThisMonth,
     blogsToday,
-    totalBlogs
+    totalBlogs,
   };
 
   res.status(200).json(response);
@@ -176,6 +176,29 @@ const updateBlogStatus = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Blog Status Updated successfully!" });
 });
 
+const addBlogImage = asyncHandler(async (req, res) => {
+  const contentImg = req.files["contentImg"]
+    ? req.files["contentImg"][0].path
+    : null;
+
+  const blog = await Img.create({
+    contentImg,
+  });
+
+  res.status(201).json({ message: "Content Image added successfully!", blog });
+});
+
+const getBlogContentImg = asyncHandler(async (req, res) => {
+  const blog = await Img.find().sort({ createdAt: -1 });
+
+  if (!blog) {
+    res.status(404);
+    throw new Error("Blog Not Found!");
+  }
+
+  res.status(200).json(blog);
+});
+
 module.exports = {
   createBlog,
   updateBlog,
@@ -183,4 +206,6 @@ module.exports = {
   getSingleBlog,
   deleteBlog,
   updateBlogStatus,
+  addBlogImage,
+  getBlogContentImg,
 };
