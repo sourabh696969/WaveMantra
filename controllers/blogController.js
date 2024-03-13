@@ -94,12 +94,13 @@ const getAllBlog = asyncHandler(async (req, res) => {
     "image blogTitle status updatedAt createdAt"
   );
 
+  const totalBlogs = blogs.length;
+
   if (blogs.length === 0) {
     res.status(404);
     throw new Error("Blog Not Found!");
   }
 
-  // Get total blogs created in this month
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
   const blogsThisMonth = await Blog.find({
@@ -109,7 +110,6 @@ const getAllBlog = asyncHandler(async (req, res) => {
     },
   }).countDocuments();
 
-  // Get total blogs created today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const blogsToday = await Blog.find({
@@ -123,6 +123,7 @@ const getAllBlog = asyncHandler(async (req, res) => {
     blogs,
     blogsThisMonth,
     blogsToday,
+    totalBlogs
   };
 
   res.status(200).json(response);
