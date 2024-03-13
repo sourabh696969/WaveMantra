@@ -90,79 +90,42 @@ const updateBlog = asyncHandler(async (req, res) => {
 });
 
 const getAllBlog = asyncHandler(async (req, res) => {
-  const blog = await Blog.find().select(
+  const blogs = await Blog.find().select(
     "image blogTitle status updatedAt createdAt"
   );
 
-  if (blog.length == 0) {
+  if (blogs.length === 0) {
     res.status(404);
     throw new Error("Blog Not Found!");
   }
 
-  res.status(200).json(blog);
-});
-
-const getBlogByMonth = asyncHandler(async (req, res) => {
-  const currentDate = new Date();
-
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1
-  );
-
-  const lastDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  );
-
-  const blog = await Blog.find({
+  // Get total blogs created in this month
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+  const blogsThisMonth = await Blog.find({
     createdAt: {
-      $gte: firstDayOfMonth,
-      $lte: lastDayOfMonth,
+      $gte: new Date(currentYear, currentMonth - 1, 1),
+      $lt: new Date(currentYear, currentMonth, 1),
     },
-  }).select("image blogTitle status updatedAt createdAt");
+  }).countDocuments();
 
-  if (blog.length == 0) {
-    res.status(404);
-    throw new Error("Blog Not Found!");
-  }
-
-  res.status(200).json(blog);
-});
-
-const getTodayBlog = asyncHandler(async (req, res) => {
-  const currentDate = new Date();
-
-  const startOfDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate()
-  );
-
-  const endOfDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate(),
-    23,
-    59,
-    59
-  );
-
-  const blog = await Blog.find({
+  // Get total blogs created today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const blogsToday = await Blog.find({
     createdAt: {
-      $gte: startOfDay,
-      $lte: endOfDay,
+      $gte: today,
+      $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
     },
-  }).select("image blogTitle status updatedAt createdAt");
+  }).countDocuments();
 
-  if (blog.length == 0) {
-    res.status(404);
-    throw new Error("Blog Not Found!");
-  }
+  const response = {
+    blogs,
+    blogsThisMonth,
+    blogsToday,
+  };
 
-  res.status(200).json(blog);
+  res.status(200).json(response);
 });
 
 const getSingleBlog = asyncHandler(async (req, res) => {
@@ -219,6 +182,4 @@ module.exports = {
   getSingleBlog,
   deleteBlog,
   updateBlogStatus,
-  getBlogByMonth,
-  getTodayBlog
 };
